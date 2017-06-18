@@ -16,8 +16,8 @@ object StreetviewLoader extends App {
   // Initialize core services
   TorchbearerDB.init()
 
-  val loadTask = new StreetviewLoadTask(437, 56, "sdfsf")
-  loadTask.run()
+  //val loadTask = new StreetviewLoadTask(437, 56, "sdfsf")
+  //loadTask.run()
 
   while (true) {
     println("here")

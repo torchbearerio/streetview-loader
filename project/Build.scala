@@ -45,6 +45,7 @@ object StreetviewLoaderBuild extends Build {
     new Dockerfile {
       from("java")
       add("build.jar", artifactTargetPath)
+      expose(8080)
       entryPoint("java", "-jar", artifactTargetPath)
     }
   }

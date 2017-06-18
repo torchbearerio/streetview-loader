@@ -45,7 +45,7 @@ class StreetviewLoadTask(epId: Int, hitId: Int, taskToken: String)
       this.sendSuccess()
     }
     catch {
-      case _: Throwable => sendFailure("Streetview Loader Error", "Unable to save streetview image")
+      case e: Throwable => sendFailure("Streetview Loader Error", e.getMessage)
     }
   }
 
