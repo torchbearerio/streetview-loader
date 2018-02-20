@@ -16,15 +16,15 @@ object StreetviewLoader extends App {
   // Initialize core services
   TorchbearerDB.init()
 
-  //val loadTask = new StreetviewLoadTask(437, 56, "sdfsf")
+  //val loadTask = new StreetviewLoadTask(246, 56, "sdfsf")
   //loadTask.run()
 
   while (true) {
-    println("here")
+    println("Waiting for task...")
     val task = getTaskForActivityArn(Constants.ActivityARNs("STREETVIEW_IMAGE_LOAD"))
 
     // If no tasks were returned, exit
-    if (task.getTaskToken != "") {
+    if (task.getTaskToken != null) {
 
       val input = parse(task.getInput)
       val epId = (input \ "epId").extract[Int]
@@ -32,6 +32,8 @@ object StreetviewLoader extends App {
       val taskToken = task.getTaskToken
 
       val loadTask = new StreetviewLoadTask(epId, hitId, taskToken)
+
+      println(s"Starting streetview load task for epId $epId hit $hitId")
 
       Future {
         blocking {

@@ -1,18 +1,30 @@
-package io.torchbearer.streetviewloader
+package io.torchbearer.streetviewloader.services
 
-import scala.io.Source
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream}
 import java.net.URL
-
-import io.torchbearer.ServiceCore.Utils.formatURLWithQueryParams
-import io.torchbearer.ServiceCore.AWSServices.KeyStore.getKey
 import javax.imageio.ImageIO
+import scalaj.http._
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+import com.javadocmd.simplelatlng.LatLng
+import io.torchbearer.ServiceCore.AWSServices.KeyStore.getKey
+import io.torchbearer.ServiceCore.Utils.formatURLWithQueryParams
 
 /**
   * Created by fredricvollmer on 4/14/17.
   */
 object StreetviewAPIService {
-  lazy val googleKey = getKey("google-key")
+  private lazy val googleKey = getKey("google-key")
+  implicit val formats = DefaultFormats
+
+  def getImageLocation(lat: Double, long: Double): LatLng = {
+    val urlString = formatURLWithQueryParams("https://maps.googleapis.com/maps/api/streetview/metadata",
+      "key"         -> googleKey,
+      "location"    -> s"$lat,$long"
+    )
+    val response = parse(Http(urlString).asString.body)
+    new LatLng((response \ "location" \ "lat").extract[Double], (response \ "location" \ "lng").extract[Double])
+  }
 
   def getImageStream(lat: Double, long: Double, bearing: Int): (InputStream, Int) = {
     val urlString = formatURLWithQueryParams("https://maps.googleapis.com/maps/api/streetview",

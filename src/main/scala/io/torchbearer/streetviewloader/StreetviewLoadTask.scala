@@ -2,11 +2,12 @@ package io.torchbearer.streetviewloader
 
 import com.javadocmd.simplelatlng.util.LengthUnit
 import io.torchbearer.ServiceCore.Orchestration.Task
-import io.torchbearer.ServiceCore.DataModel.ExecutionPoint
+import io.torchbearer.ServiceCore.DataModel.{ExecutionPoint, StreetviewImage}
 import io.torchbearer.ServiceCore.AWSServices.S3
 import com.javadocmd.simplelatlng.{LatLng, LatLngTool}
 import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest}
 import io.torchbearer.ServiceCore.Constants
+import io.torchbearer.streetviewloader.services.StreetviewAPIService
 
 /**
   * Created by fredricvollmer on 4/13/17.
@@ -42,10 +43,15 @@ class StreetviewLoadTask(epId: Int, hitId: Int, taskToken: String)
         putStreetviewImage(ep, Constants.POSITION_AT, point)
       }
 
+      println(s"Finished streetview load task for ep $epId and hit $hitId")
+
       this.sendSuccess()
     }
     catch {
-      case e: Throwable => sendFailure("Streetview Loader Error", e.getMessage)
+      case e: Throwable =>
+        println(s"Streetview loader error wit epi $epId and hit $hitId")
+        e.printStackTrace()
+        sendFailure("Streetview Loader Error", e.getMessage)
     }
   }
 
@@ -68,5 +74,10 @@ class StreetviewLoadTask(epId: Int, hitId: Int, taskToken: String)
     val req = new PutObjectRequest(Constants.S3_SV_IMAGE_BUCKET, key, imgStream, metadata)
 
     client.putObject(req)
+
+    // Save streetview image metadata to DB
+    val imageLocation = StreetviewAPIService.getImageLocation(imagePoint.getLatitude, imagePoint.getLongitude)
+    val si = StreetviewImage(executionPoint.executionPointId, position, imageLocation.getLatitude, imageLocation.getLongitude)
+    si.add()
   }
 }

@@ -71,7 +71,7 @@ object StreetviewLoaderBuild extends Build {
 
   // To enable a component remove the //
   val additionalComponents =
-  Seq(akka, simplelatlng)
+  Seq(akka, simplelatlng, http, json4s)
 
 
   // ------------------------------------------
@@ -81,6 +81,8 @@ object StreetviewLoaderBuild extends Build {
   // Other components
   lazy val akka = "com.typesafe.akka" %% "akka-actor" % "2.5.0"
   lazy val simplelatlng = "com.javadocmd" % "simplelatlng" % "1.3.1"
+  lazy val http = "org.scalaj" %% "scalaj-http" % "2.3.0"
+  lazy val json4s = "org.json4s" %% "json4s-jackson" % "3.3.0"
 
   // Additional repos, required by some components
   final val ExtraResolvers = Seq(
