@@ -2,7 +2,7 @@ package io.torchbearer.streetviewloader
 
 import com.javadocmd.simplelatlng.util.LengthUnit
 import io.torchbearer.ServiceCore.Orchestration.Task
-import io.torchbearer.ServiceCore.DataModel.{ExecutionPoint, StreetviewImage}
+import io.torchbearer.ServiceCore.DataModel.{ExecutionPoint, Hit, StreetviewImage}
 import io.torchbearer.ServiceCore.AWSServices.S3
 import com.javadocmd.simplelatlng.{LatLng, LatLngTool}
 import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest}
@@ -16,6 +16,9 @@ class StreetviewLoadTask(epId: Int, hitId: Int, taskToken: String)
   extends Task(epId = epId, hitId = hitId, taskToken = taskToken) {
 
   override def run(): Unit = {
+    // Set start time
+    Hit.setStartTimeForTask(hitId, "streetview_load", System.currentTimeMillis)
+
     // Load ExecutionPoint
     val ep = ExecutionPoint.getExecutionPoint(epId) getOrElse { return }
     val point = new LatLng(ep.lat, ep.long)
@@ -52,6 +55,11 @@ class StreetviewLoadTask(epId: Int, hitId: Int, taskToken: String)
         println(s"Streetview loader error wit epi $epId and hit $hitId")
         e.printStackTrace()
         sendFailure("Streetview Loader Error", e.getMessage)
+    }
+
+    finally {
+      // Set end time
+      Hit.setEndTimeForTask(hitId, "streetview_load", System.currentTimeMillis)
     }
   }
 
