@@ -32,19 +32,19 @@ class StreetviewLoadTask(epId: Int, hitId: Int, taskToken: String)
     try {
       // For maneuvers, take streetview images at 3 distances starting at 20 feet back
       if (ep.executionPointType == Constants.EXECUTION_POINT_TYPE_MANEUVER) {
-        putStreetviewImage(ep, Constants.POSITION_AT, imagePointAt, hit.pipeline)
+        putStreetviewImage(ep, Constants.POSITION_AT, imagePointAt)
 
         if (ep.closestIntersectionDistance > Constants.IMAGE_DISTANCE_JUST_BEFORE) {
-          putStreetviewImage(ep, Constants.POSITION_JUST_BEFORE, imagePointJustBefore, hit.pipeline)
+          putStreetviewImage(ep, Constants.POSITION_JUST_BEFORE, imagePointJustBefore)
         }
 
         if (ep.closestIntersectionDistance > Constants.IMAGE_DISTANCE_BEFORE) {
-          putStreetviewImage(ep, Constants.POSITION_BEFORE, imagePointBefore, hit.pipeline)
+          putStreetviewImage(ep, Constants.POSITION_BEFORE, imagePointBefore)
         }
       }
       else {
         // For destinations, take single streetview image right at point
-        putStreetviewImage(ep, Constants.POSITION_AT, point, hit.pipeline)
+        putStreetviewImage(ep, Constants.POSITION_AT, point)
       }
 
       println(s"Finished streetview load task for ep $epId and hit $hitId")
@@ -64,9 +64,9 @@ class StreetviewLoadTask(epId: Int, hitId: Int, taskToken: String)
     }
   }
 
-  private def putStreetviewImage(executionPoint: ExecutionPoint, position: String, imagePoint: LatLng, pipeline: String): Unit = {
+  private def putStreetviewImage(executionPoint: ExecutionPoint, position: String, imagePoint: LatLng): Unit = {
     val client = S3.getClient
-    val key = s"${executionPoint.executionPointId}_${position}_$pipeline.jpg"
+    val key = s"${hitId}_$position.jpg"
 
     val bearing = executionPoint.executionPointType match {
       case Constants.EXECUTION_POINT_TYPE_MANEUVER => executionPoint.bearing
