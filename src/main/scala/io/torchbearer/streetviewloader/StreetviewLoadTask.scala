@@ -20,7 +20,8 @@ class StreetviewLoadTask(epId: Int, hitId: Int, taskToken: String)
     Hit.setStartTimeForTask(hitId, "streetview_load", System.currentTimeMillis)
 
     // Load ExecutionPoint
-    val ep = ExecutionPoint.getExecutionPoint(epId) getOrElse { return }
+    val ep = ExecutionPoint.getExecutionPoint(epId) getOrElse { throw new Exception("Could not load execution point") }
+    val hit = Hit.getHit(hitId) getOrElse { throw new Exception("Could not load hit") }
     val point = new LatLng(ep.lat, ep.long)
     val inverseBearing = ep.bearing - 180
 
@@ -31,19 +32,19 @@ class StreetviewLoadTask(epId: Int, hitId: Int, taskToken: String)
     try {
       // For maneuvers, take streetview images at 3 distances starting at 20 feet back
       if (ep.executionPointType == Constants.EXECUTION_POINT_TYPE_MANEUVER) {
-        putStreetviewImage(ep, Constants.POSITION_AT, imagePointAt)
+        putStreetviewImage(ep, Constants.POSITION_AT, imagePointAt, hit.pipeline)
 
         if (ep.closestIntersectionDistance > Constants.IMAGE_DISTANCE_JUST_BEFORE) {
-          putStreetviewImage(ep, Constants.POSITION_JUST_BEFORE, imagePointJustBefore)
+          putStreetviewImage(ep, Constants.POSITION_JUST_BEFORE, imagePointJustBefore, hit.pipeline)
         }
 
         if (ep.closestIntersectionDistance > Constants.IMAGE_DISTANCE_BEFORE) {
-          putStreetviewImage(ep, Constants.POSITION_BEFORE, imagePointBefore)
+          putStreetviewImage(ep, Constants.POSITION_BEFORE, imagePointBefore, hit.pipeline)
         }
       }
       else {
         // For destinations, take single streetview image right at point
-        putStreetviewImage(ep, Constants.POSITION_AT, point)
+        putStreetviewImage(ep, Constants.POSITION_AT, point, hit.pipeline)
       }
 
       println(s"Finished streetview load task for ep $epId and hit $hitId")
@@ -63,9 +64,9 @@ class StreetviewLoadTask(epId: Int, hitId: Int, taskToken: String)
     }
   }
 
-  private def putStreetviewImage(executionPoint: ExecutionPoint, position: String, imagePoint: LatLng): Unit = {
+  private def putStreetviewImage(executionPoint: ExecutionPoint, position: String, imagePoint: LatLng, pipeline: String): Unit = {
     val client = S3.getClient
-    val key = s"${executionPoint.executionPointId}_$position.jpg"
+    val key = s"${executionPoint.executionPointId}_${position}_$pipeline.jpg"
 
     val bearing = executionPoint.executionPointType match {
       case Constants.EXECUTION_POINT_TYPE_MANEUVER => executionPoint.bearing
